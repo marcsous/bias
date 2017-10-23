@@ -73,7 +73,7 @@ end
 % units above are in no. molecules, i.e. 1 unit of water = 2 protons
 % and 1 unit of fat = (2+6*CL-2*NDB) protons
 if isequal(units,'proton')
-    % convert to proton units: 1 unit = 1 proton (used in PDFF)
+    % convert to proton units, i.e. 1 unit = 1 proton (used in PDFF)
     awater = awater/sum(awater);
     a = a/sum(a);
 else

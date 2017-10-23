@@ -22,9 +22,13 @@ function [A psi] = fat_basis(te,NDB,H2O,Tesla,precession,units)
 % Bydder M, Girard O, Hamilton G. Magn Reson Imaging. 2011;29:1041
 
 % argument checks
+if ~exist('units','var') || isempty(units)
+    units = 'proton';
+end
 if ~exist('NDB','var') || isempty(NDB)
     NDB = -1;
     disp(['Warning: fat_basis.m assuming NDB=' num2str(NDB)])
+    if ~isequal(units,'proton'); error('NDB=-1 requires units=proton'); end
 end
 if ~exist('H2O','var') || isempty(H2O)
     H2O = 4.7;
@@ -37,9 +41,6 @@ end
 if ~exist('precession','var') || isempty(precession)
     precession = -1; % GE default is -1
     disp(['Warning: fat_basis.m assuming precession=' num2str(precession)])
-end
-if ~exist('units','var') || isempty(units)
-    units = 'proton';
 end
 
 % backward compatibility
@@ -57,7 +58,6 @@ else
     NDDB = 0.093 * NDB^2;
     
     % formulas for no. protons per molecule
-    awater = 2;
     a(9) = NDB*2;
     a(8) = 1;
     a(7) = 4;
@@ -67,19 +67,20 @@ else
     a(3) = 6;
     a(2) = (CL-4)*6-NDB*8+NDDB*2;
     a(1) = 9;
+    awater = 2;
+end
 
-    % units above are in no. molecules: 1 unit of water = 2 protons
-    % and 1 unit of fat = (2+6*CL-2*NDB) protons
-    if isequal(units,'mass')
-        % scale so that 18 units of water = 2 protons and (134+42*CL-2*NDB) 
-        % units of fat = (2+6*CL-2*NDB) protons, i.e. convert to mass units
-        awater = awater/18;
-        a = a/(134+42*CL-2*NDB);
-    else
-        % convert to proton units: 1 unit = 1 proton (used in PDFF)
-        awater = awater/2;
-        a = a/sum(a);
-    end
+% units above are in no. molecules, i.e. 1 unit of water = 2 protons
+% and 1 unit of fat = (2+6*CL-2*NDB) protons
+if isequal(units,'proton')
+    % convert to proton units: 1 unit = 1 proton (used in PDFF)
+    awater = awater/sum(awater);
+    a = a/sum(a);
+else
+    % convert to mass units, i.e. 18 units of water = 2 protons and
+    % (134+42*CL-2*NDB) units of fat = (2+6*CL-2*NDB) protons
+    awater = awater/18;
+    a = a/(134+42*CL-2*NDB);
 end
 
 % time evolution matrix (te in ms)
